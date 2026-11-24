@@ -187,6 +187,8 @@ def scan_once():
 if __name__ == "__main__":
     if os.getenv("ONCE") == "1":  # run a single scan and exit (for GitHub Actions)
         scan_once()
+        if os.getenv("GITHUB_EVENT_NAME") == "workflow_dispatch":  # manual test run
+            send_telegram(f"✅ Manual scan complete on {EXCHANGE}. Alerts will appear here when setups trigger.")
         raise SystemExit(0)
     send_telegram(f"✅ Scanner started on {EXCHANGE} (top {TOP_N} pairs, every {SCAN_EVERY_SEC}s)")
     while True:
