@@ -20,10 +20,12 @@ import requests
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 EXCHANGE = os.getenv("EXCHANGE", "bybit")      # bybit, okx, binanceusdm, ...
-TOP_N = int(os.getenv("TOP_N", "40"))          # scan top N pairs by 24h volume
+TOP_N = int(os.getenv("TOP_N", "300"))          # scan top N pairs by 24h volume
 SCAN_EVERY_SEC = int(os.getenv("SCAN_EVERY_SEC", "300"))
 COOLDOWN_HOURS = float(os.getenv("COOLDOWN_HOURS", "4"))
-VOL_SPIKE = float(os.getenv("VOL_SPIKE", "1.3"))
+VOL_SPIKE = float(os.getenv("VOL_SPIKE", "1.1"))
+RSI_LO = float(os.getenv("RSI_LO", "45"))   # long trigger: RSI crosses up through this
+RSI_HI = float(os.getenv("RSI_HI", "55"))   # short trigger: RSI crosses down through this
 SL_ATR, TP_ATR = 1.5, 3.0
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -122,9 +124,9 @@ def analyze(symbol):
     entry = m15["close"].iloc[-1]
 
     side = None
-    if trend == "up" and prev_rsi < 40 <= cur_rsi and vol_ratio >= VOL_SPIKE:
+    if trend == "up" and prev_rsi < RSI_LO <= cur_rsi and vol_ratio >= VOL_SPIKE:
         side = "LONG"
-    elif trend == "down" and prev_rsi > 60 >= cur_rsi and vol_ratio >= VOL_SPIKE:
+    elif trend == "down" and prev_rsi > RSI_HI >= cur_rsi and vol_ratio >= VOL_SPIKE:
         side = "SHORT"
     if not side:
         return None
